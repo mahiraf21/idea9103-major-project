@@ -7,49 +7,6 @@ let imgAspectRatio; // aspect ratio for resizing
 let skyColour, waterColour, greenColour, boardwalkColour; // define colours for each shape
 let frameCounter = 0; // frame counter to control the animation speed
 
-// declare global variables for individual project
-let skyWave, waterWave, greenWave, boardwalkWave;
-
-// create a new class for individual project
-// this class tells all the circles to move in one shape
-// this class has perlin noise to make a smooth path everytime the screen updates
-class WavePattern {
-    constructor()
-    {
-        //start position for perlin noise
-        //to give random starting position for the circles
-        this.xNoiseOffset = random(1000); // randomise x positon
-        this.yNoiseOffset = random(1000); // randomise y positoin
-        this.sizeNoiseOffset = random(1000); // randomise circles' size
-    }
-
-    // update the circles' position based on perlin noise
-    update(circles)
-    {
-        // give a subtle wave-like movement by adding an angle
-        let angleMove = map(noise(1000), 0, 360, 0, width);
-        this.xNoiseOffset += cos(angleMove) + 0.001; // drift along x axis
-        this.yNoiseOffset += sin(angleMove) + 0.001; // drift along y axis
-        this.sizeNoiseOffset += 0.01; // slowly change size effect
-
-        // go through each circle and add perlin noise based offset
-        for (let circle of circles)
-        {
-            // calculate the offsets for each circle based on the noise
-            let xMove = (noise(this.xNoiseOffset) - 0.5) * cos(angleMove);
-            let yMove = (noise(this.yNoiseOffset) - 0.5) * sin(angleMove);
-
-            // apply the movement to each circle
-            circle.x += xMove;
-            circle.y += yMove;
-
-            // update size to create the grow-shrink effect
-            let scaleFactor = (noise(this.sizeNoiseOffset) * 0.5) + 0.75; // range between 0.75 - 1.25
-            circle.size = circle.originalSize * scaleFactor;
-        }
-    }
-}
-
 //preload the images
 //these images will be used as a guide for the color map
 function preload() {
@@ -70,7 +27,6 @@ function preload() {
 
 //
 function setup() { //for the animation
-    angleMode(DEGREES);
     frameRate(30); //adjusted to reduce load time
     imgAspectRatio = screamImg.width / screamImg.height; //gets aspect ratio by dividing width and height of image
     resizeCanvasToFitWindow(); //resized canvas
@@ -97,12 +53,6 @@ function setup() { //for the animation
     initializeCircles(waterCircles, waterShape, waterColour, 2000, 0.3, -0.15, 14);
     initializeCircles(greenCircles, greenShape, greenColour, 2000, 0.15, -0.25, 12);
     initializeCircles(boardwalkCircles, boardwalkShape, boardwalkColour, 7000, -0.3, -0.4, 10);
-
-    // create the wave patterns
-    skyWave = new WavePattern();
-    waterWave = new WavePattern();
-    greenWave = new WavePattern();
-    boardwalkWave = new WavePattern();
 }
 
 function draw() {
@@ -115,12 +65,6 @@ function draw() {
       translate(i * width / 2, 0); // shifts to the left or right half of the canvas
 
       if (i === 0) {
-          //update each set of circles with its wave pattern
-          skyWave.update(skyCircles);
-          waterWave.update(waterCircles);
-          greenWave.update(greenCircles);
-          boardwalkWave.update(boardwalkCircles);
-
           // draws circles for left half of image (normal)
           moveAndDrawCircles(skyCircles, skyShape, skyColour);
           moveAndDrawCircles(waterCircles, waterShape, waterColour);
@@ -133,12 +77,6 @@ function draw() {
           // Right half (flipped images)
           scale(-1, 1); // flips the objects horizontally
           translate(-width / 2, 0); // moves the origin back into the canvas
-
-          //update each set of circles with its wave pattern
-          skyWave.update(skyCircles);
-          waterWave.update(waterCircles);
-          greenWave.update(greenCircles);
-          boardwalkWave.update(boardwalkCircles);
 
           moveAndDrawCircles(skyCircles, skyFlippedShape, skyColour);
           moveAndDrawCircles(waterCircles, waterFlippedShape, waterColour);
@@ -163,7 +101,6 @@ function initializeCircles(circles, shape, colour, count, xSpeed, ySpeed, size) 
             x: xPos,
             y: yPos,
             size: size + random(5), //randomly adds
-            originalSize: random(5, 15),
             opacity: 0, //beginning opacity for glittery effect
             fadeIn: true, //circles fade in
             delay: int(random(30, 150)), //added delay

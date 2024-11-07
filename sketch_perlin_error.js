@@ -6,49 +6,12 @@ let skyCircles = [], waterCircles = [], greenCircles = [], boardwalkCircles = []
 let imgAspectRatio; // aspect ratio for resizing
 let skyColour, waterColour, greenColour, boardwalkColour; // define colours for each shape
 let frameCounter = 0; // frame counter to control the animation speed
+let pixelColour = (0);
 
-// declare global variables for individual project
-let skyWave, waterWave, greenWave, boardwalkWave;
-
-// create a new class for individual project
-// this class tells all the circles to move in one shape
-// this class has perlin noise to make a smooth path everytime the screen updates
-class WavePattern {
-    constructor()
-    {
-        //start position for perlin noise
-        //to give random starting position for the circles
-        this.xNoiseOffset = random(1000); // randomise x positon
-        this.yNoiseOffset = random(1000); // randomise y positoin
-        this.sizeNoiseOffset = random(1000); // randomise circles' size
-    }
-
-    // update the circles' position based on perlin noise
-    update(circles)
-    {
-        // give a subtle wave-like movement by adding an angle
-        let angleMove = map(noise(1000), 0, 360, 0, width);
-        this.xNoiseOffset += cos(angleMove) + 0.001; // drift along x axis
-        this.yNoiseOffset += sin(angleMove) + 0.001; // drift along y axis
-        this.sizeNoiseOffset += 0.01; // slowly change size effect
-
-        // go through each circle and add perlin noise based offset
-        for (let circle of circles)
-        {
-            // calculate the offsets for each circle based on the noise
-            let xMove = (noise(this.xNoiseOffset) - 0.5) * cos(angleMove);
-            let yMove = (noise(this.yNoiseOffset) - 0.5) * sin(angleMove);
-
-            // apply the movement to each circle
-            circle.x += xMove;
-            circle.y += yMove;
-
-            // update size to create the grow-shrink effect
-            let scaleFactor = (noise(this.sizeNoiseOffset) * 0.5) + 0.75; // range between 0.75 - 1.25
-            circle.size = circle.originalSize * scaleFactor;
-        }
-    }
-}
+//declare global variable for individual project
+let flowField = [];
+let fieldScale = 20; //scale of each grid cell in the flow field
+let noisescale = 0.1; //adjust for larger/smaller flow field pattern
 
 //preload the images
 //these images will be used as a guide for the color map
@@ -70,7 +33,6 @@ function preload() {
 
 //
 function setup() { //for the animation
-    angleMode(DEGREES);
     frameRate(30); //adjusted to reduce load time
     imgAspectRatio = screamImg.width / screamImg.height; //gets aspect ratio by dividing width and height of image
     resizeCanvasToFitWindow(); //resized canvas
@@ -98,11 +60,12 @@ function setup() { //for the animation
     initializeCircles(greenCircles, greenShape, greenColour, 2000, 0.15, -0.25, 12);
     initializeCircles(boardwalkCircles, boardwalkShape, boardwalkColour, 7000, -0.3, -0.4, 10);
 
-    // create the wave patterns
-    skyWave = new WavePattern();
-    waterWave = new WavePattern();
-    greenWave = new WavePattern();
-    boardwalkWave = new WavePattern();
+    //setup flow field for individual project
+    //generate flow field based on perlin noise
+    createFlowField(skyShape, flowField, skyColour);
+    createFlowField(waterShape, flowField, waterColour);
+    createFlowField(greenShape, flowField, greenColour);
+    createFlowField(boardwalkShape, flowField, boardwalkColour);
 }
 
 function draw() {
@@ -115,12 +78,6 @@ function draw() {
       translate(i * width / 2, 0); // shifts to the left or right half of the canvas
 
       if (i === 0) {
-          //update each set of circles with its wave pattern
-          skyWave.update(skyCircles);
-          waterWave.update(waterCircles);
-          greenWave.update(greenCircles);
-          boardwalkWave.update(boardwalkCircles);
-
           // draws circles for left half of image (normal)
           moveAndDrawCircles(skyCircles, skyShape, skyColour);
           moveAndDrawCircles(waterCircles, waterShape, waterColour);
@@ -133,12 +90,6 @@ function draw() {
           // Right half (flipped images)
           scale(-1, 1); // flips the objects horizontally
           translate(-width / 2, 0); // moves the origin back into the canvas
-
-          //update each set of circles with its wave pattern
-          skyWave.update(skyCircles);
-          waterWave.update(waterCircles);
-          greenWave.update(greenCircles);
-          boardwalkWave.update(boardwalkCircles);
 
           moveAndDrawCircles(skyCircles, skyFlippedShape, skyColour);
           moveAndDrawCircles(waterCircles, waterFlippedShape, waterColour);
@@ -159,19 +110,28 @@ function initializeCircles(circles, shape, colour, count, xSpeed, ySpeed, size) 
         let { x: xPos, y: yPos } = findRandomColourPosition(shape, colour, false); //finds xy coordinate within the shape with that colour
         let initialColour = getCachedColour(screamImg, int(xPos), int(yPos)); //retrieves original colour from screamImg
 
+        //individual project : perlin noise animation
+        //im going to incorporate perlin noise into our final project to make the animation run smoothly
+
+        //generate smooth, continuous random movement using perlin noise
+        let noiseX = random(1000); // seed for x-axis perlin noise
+        let noiseY = random(1000); // seed for y-axis perlin noise
+
         circles.push({ //adds the circle to the array
             x: xPos,
             y: yPos,
             size: size + random(5), //randomly adds
-            originalSize: random(5, 15),
             opacity: 0, //beginning opacity for glittery effect
             fadeIn: true, //circles fade in
             delay: int(random(30, 150)), //added delay
             opacityDecayRate: random(1, 3), //smooth darkening
             currentColour: initialColour, //set initial colour
             targetColour: initialColour, //also set as initial colour
-            xSpeed: xSpeed, //x-speed value
-            ySpeed: ySpeed //y-speed value
+
+            //in the group code, we used xSpeed & ySpeed to change the speed value
+            //in my individual project, i'm changing it to noiseX & noiseY to incorporate the perlin noise
+            noiseX: noiseX, //perlin noise for x speed
+            noiseY: noiseY //perlin noise for y speed
         });
     }
 }
@@ -203,21 +163,110 @@ function isPositionNearScreamer(x, y) {
     return x > screamerBounds.xMin && x < screamerBounds.xMax && y > screamerBounds.yMin && y < screamerBounds.yMax;
 } 
 
+// we need to find the colour the random position in a given shape
+// where the pixel colour matches a specific colour
+// the purpose is to place the circles in areas of a specific colour
+function findRandomColourPosition(shape, colour, isFlipped = false) {
+    let x, y; // declare variables for x & y coordinates
+    let attempts = 0; // initialize attempts
+    const maxAttempts = 1000; // set the max attempts allowed to find matching colour
+   
+    // repeat until the pixel matches a specified colour or attempts exceeds limit
+    // the do-while loop is used because we want to run the code at least once
+    // reference: https://www.w3schools.com/jsref/jsref_dowhile.asp
+    do {
+        x = int(random(isFlipped ? width / 2 : 0, isFlipped ? width : width / 2));
+        y = int(random(height));
+        attempts++;
+        if (attempts >= maxAttempts) {
+            console.error("max attempts reached: unable to find matching colour");
+            break;
+        }
+    } while (!isShapeColour(getCachedColour(shape, x, y), colour));
+    return { x, y };
+  }
+  
+  //to check if pixelColour matches shapeColour
+  function isShapeColour(pixelColour, shapeColour) {
+      return red(pixelColour) === red(shapeColour) &&
+             green(pixelColour) === green(shapeColour) &&
+             blue(pixelColour) === blue(shapeColour);
+  }
+  
+  //retrieves colour from coordinates through pixels
+  function getCachedColour(image, x, y) {
+      let index = (x + y * image.width) * 4;
+      return color(image.pixels[index], image.pixels[index + 1], image.pixels[index + 2]);
+}
+
+// individual project
+// create flow field based on perlin noise
+// flow field reference: https://www.tylerxhobbs.com/words/flow-fields
+
+function createFlowField(shape, field, targetColour)
+{
+    shape.loadPixels();
+
+    //initialize the grid
+    for (let y = 0; y < shape.height; y += fieldScale)
+    {
+        for (let x = 0; x < shape.width; x += fieldScale)
+        {
+            let index = (x + y * shape.width) * 4;
+            /*let pixelColour = color(
+                shape.pixels[index],
+                shape.pixels[index + 1],
+                shape.pixels[index + 2]
+            );*/
+
+            //check if the pixel colour matches the target colour
+            if (isShapeColour(pixelColour, targetColour))
+            {
+                //create a direction vector based on pixel brightness
+                let angle = map(brightness(pixelColour), 0, 255, 0, TWO_PI);
+                field[x + y * shape.width] = p5.Vector.fromAngle(angle);
+            }
+            else
+            {
+                //default to random direction if colour doesn't match
+                field[x + y * shape.width] = p5.Vector.random2D();
+                console.error("colour doesn't match");
+            }
+
+            console.log("colour art pixel " + pixelColour);
+            console.log("target colour " + targetColour);
+        }
+    }
+}
+
 // to animate each circle within a specific shape
 // we use this function
 // this function updates the position, color, and opacity
 // of each circle and reposition circles that have faded out completely
 function moveAndDrawCircles(circles, shape, shapeColour) {
-    let buffer = 16; // allow circles to move slightly beyond the screen edges before resetting
+  let buffer = 16; // allow circles to move slightly beyond the screen edges before resetting
 
   for (let i = 0; i < circles.length; i++) {
     let circle = circles[i];
 
     // start moving and fading in after delay
     if (frameCounter >= circle.delay) {
-      circle.x += circle.xSpeed; // update x position
-      circle.y += circle.ySpeed; // update y position
+      //----individual code-----
 
+      //determine flow direction based on current position
+      let fieldIndex = int(circle.x) + int(circle.y) * shape.width;
+      let flowDirection = flowField[fieldIndex];
+
+      if (flowDirection)
+      {
+        //update position based on flow direction and perlin noise
+        circle.x += flowDirection.x * 0.1 + (noise(circle.noiseX) - 0.5) * 0.5;
+        circle.y += flowDirection.y * 0.1 + (noise(circle.noiseY) - 0.5) * 0.5;
+        circle.noiseX += 0.01;
+        circle.noiseY += 0.01;
+      }
+
+      //-------group code---------
       // update colour every few frames
       if (frameCounter % 5 === 0) {
         let newTargetColour = getCachedColour(screamImg, int(circle.x), int(circle.y));
@@ -250,7 +299,6 @@ function moveAndDrawCircles(circles, shape, shapeColour) {
         }
       }
 
-      // apply scale factor to circle size
       let scaleFactor = height / 812;
       fill(red(circle.currentColour), green(circle.currentColour), blue(circle.currentColour), circle.opacity);
       noStroke();
@@ -267,41 +315,6 @@ function moveAndDrawCircles(circles, shape, shapeColour) {
       circle.delay = frameCounter + int(random(30, 300)); // set new delay with greater randomness
     }
   }
-}
-
-// we need to find the colour the random position in a given shape
-// where the pixel colour matches a specific colour
-// the purpose is to place the circles in areas of a specific colour
-function findRandomColourPosition(shape, colour, isFlipped = false) {
-  let x, y; // declare variables for x & y coordinates
-  let attempts = 0; // initialize attempts
-  const maxAttempts = 1000; // set the max attempts allowed to find matching colour
- 
-  // repeat until the pixel matches a specified colour or attempts exceeds limit
-  // the do-while loop is used because we want to run the code at least once
-  // reference: https://www.w3schools.com/jsref/jsref_dowhile.asp
-  do {
-      x = int(random(isFlipped ? width / 2 : 0, isFlipped ? width : width / 2));
-      y = int(random(height));
-      attempts++;
-      if (attempts >= maxAttempts) {
-          console.error("max attempts reached: unable to find matching colour");
-          break;
-      }
-  } while (!isShapeColour(getCachedColour(shape, x, y), colour));
-  return { x, y };
-}
-
-//to check if pixelColour matches shapeColour
-function isShapeColour(pixelColour, shapeColour) {
-    return red(pixelColour) === red(shapeColour) &&
-           green(pixelColour) === green(shapeColour) &&
-           blue(pixelColour) === blue(shapeColour);
-}
-//retrieves colour from coordinates through pixels
-function getCachedColour(image, x, y) {
-    let index = (x + y * image.width) * 4;
-    return color(image.pixels[index], image.pixels[index + 1], image.pixels[index + 2]);
 }
 
 function drawScreamer() {
@@ -370,7 +383,7 @@ function drawScreamer() {
   ellipse(308 * scaleFactor, 490 * scaleFactor, 15 * scaleFactor, 30 * scaleFactor); // mouth
 }
   
-  //resized canvas to fit the windowbased on height and aspect ratio
+//resized canvas to fit the windowbased on height and aspect ratio
 function resizeCanvasToFitWindow() {
     let newHeight = windowHeight;
     let newWidth = newHeight * imgAspectRatio * 2;
@@ -388,3 +401,4 @@ function resizeCanvasToFitWindow() {
     greenFlippedShape.resize(newWidth / 2, newHeight); 
     boardwalkFlippedShape.resize(newWidth / 2, newHeight);
 }
+
