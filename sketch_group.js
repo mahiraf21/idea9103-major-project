@@ -113,33 +113,6 @@ function initializeCircles(circles, shape, colour, count, xSpeed, ySpeed, size) 
     }
 }
 
-//function to find coordinate where colour is matched
-function findRandomColourPosition(shape, colour, isFlipped = false) { 
-  let x, y;
-  let attempts = 0;
-  const maxAttempts = 1000; 
-
-  do { //generates random coordinates, checks colour match, and if max attempts are reached
-      x = int(random(isFlipped ? width / 2 : 0, isFlipped ? width : width / 2));
-      y = int(random(height));
-      attempts++;
-      if (attempts >= maxAttempts) {
-          console.error("max attempts reached: unable to find matching colour");
-          break;
-      }
-  } while (!isShapeColour(getCachedColour(shape, x, y), colour) || isPositionNearScreamer(x, y)); //checks if near screamer
-  return { x, y }; 
-}
-
-function isPositionNearScreamer(x, y) {
-    //adjusts the bounding box of the screamer shape to avoid overlap
-    const screamerBounds = {
-        xMin: 188, xMax: 374,  //horizontal bounds
-        yMin: 487, yMax: 880   //vertical bounds 
-    };
-    return x > screamerBounds.xMin && x < screamerBounds.xMax && y > screamerBounds.yMin && y < screamerBounds.yMax;
-} 
-
 // to animate each circle within a specific shape
 // we use this function
 // this function updates the position, color, and opacity
