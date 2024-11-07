@@ -215,86 +215,92 @@ function getCachedColour(image, x, y) {
 }
 
 function drawScreamer() {
-  noStroke(); // ensures no outlines are drawn around shapes
-
-  // the screamer was originally made without accounting for window resize,
-  // the scale factor was created based on the windows height in comparison
-  // to the height of the original proportions of the screamer at the optimal height
-  // with scaleFactor being added to each element ensuring correct sizing for current window height
-  let scaleFactor = height / 830;
-
-  // Draw bodies main shape with curves
-  fill(76, 63, 55); // body color
-  beginShape();
-  curveVertex(width / 3, height); // start from bottom left of the screen
-  curveVertex(202 * scaleFactor, 752 * scaleFactor); // curve down towards body base
-  curveVertex(206 * scaleFactor, 692 * scaleFactor); // upward curve to define waist
-  curveVertex(188 * scaleFactor, 651 * scaleFactor); // curve inwards for shape contour
-  curveVertex(209 * scaleFactor, 593 * scaleFactor); // define shoulder area
-  curveVertex(222 * scaleFactor, 533 * scaleFactor); // further shape upper body
-  curveVertex(271 * scaleFactor, 509 * scaleFactor); // neck and head start
-  curveVertex(249 * scaleFactor, 434 * scaleFactor); // further curve for neck
-  curveVertex(300 * scaleFactor, 387 * scaleFactor); // head curve start
-  curveVertex(365 * scaleFactor, 427 * scaleFactor); // complete head shape
-  curveVertex(345 * scaleFactor, 520 * scaleFactor); // outline back to body
-  curveVertex(374 * scaleFactor, 610 * scaleFactor); // lower body
-  curveVertex(305 * scaleFactor, 738 * scaleFactor); // return to lower body area
-  curveVertex(320 * scaleFactor, height); // complete body outline at bottom right
-  endShape(CLOSE);
-
-  // draw his hand - positioned near upper part of the body
-  fill(211, 164, 103); // hand color
-  beginShape();
-  curveVertex(246 * scaleFactor, 567 * scaleFactor); // hand start
-  curveVertex(271 * scaleFactor, 509 * scaleFactor); // move to lower hand section
-  curveVertex(249 * scaleFactor, 434 * scaleFactor); // curve up to hand contour
-  curveVertex(300 * scaleFactor, 387 * scaleFactor); // hand wrist area
-  curveVertex(365 * scaleFactor, 427 * scaleFactor); // base of fingers
-  curveVertex(345 * scaleFactor, 520 * scaleFactor); // up along fingers
-  curveVertex(374 * scaleFactor, 610 * scaleFactor); // back down along hand
-  curveVertex(353 * scaleFactor, 617 * scaleFactor); // close off hand shape
-  curveVertex(318 * scaleFactor, 542 * scaleFactor); // hand thumb area
-  curveVertex(340 * scaleFactor, 450 * scaleFactor); // fingers continue
-  curveVertex(285 * scaleFactor, 457 * scaleFactor); // top of hand contour
-  curveVertex(296 * scaleFactor, 505 * scaleFactor); // lower back of hand
-  curveVertex(263 * scaleFactor, 587 * scaleFactor); // base of hand near wrist
-  endShape(CLOSE);
-
-  // draw face: contour of the face structure
-  fill(163, 144, 105); // face color
-  beginShape();
-  curveVertex(295 * scaleFactor, 514 * scaleFactor); // face outline start
-  curveVertex(284 * scaleFactor, 484 * scaleFactor); // top of face
-  curveVertex(263 * scaleFactor, 447 * scaleFactor); // curve down left side of face
-  curveVertex(293 * scaleFactor, 389 * scaleFactor); // lower chin area
-  curveVertex(351 * scaleFactor, 422 * scaleFactor); // right side of face
-  curveVertex(342 * scaleFactor, 469 * scaleFactor); // return to top right of face
-  curveVertex(329 * scaleFactor, 492 * scaleFactor); // finish contour
-  curveVertex(313 * scaleFactor, 513 * scaleFactor); // end at chin
-  endShape(CLOSE);
-
-  //  eyes and mouth to define facial expression
-  fill(216, 181, 117); // color for expression details
-  ellipse(290 * scaleFactor, 440 * scaleFactor, 20 * scaleFactor, 30 * scaleFactor); // left eye
-  ellipse(325 * scaleFactor, 440 * scaleFactor, 20 * scaleFactor, 30 * scaleFactor); // right eye
-  ellipse(308 * scaleFactor, 490 * scaleFactor, 15 * scaleFactor, 30 * scaleFactor); // mouth
-}
+    noStroke(); // ensures no outlines are drawn around shapes
   
-  //resized canvas to fit the windowbased on height and aspect ratio
-function resizeCanvasToFitWindow() {
-    let newHeight = windowHeight;
-    let newWidth = newHeight * imgAspectRatio * 2;
-
-    resizeCanvas(newWidth, newHeight);
-    screamImg.resize(newWidth / 2, newHeight);
-    skyShape.resize(newWidth / 2, newHeight); 
-    waterShape.resize(newWidth / 2, newHeight); 
-    greenShape.resize(newWidth / 2, newHeight); 
-    boardwalkShape.resize(newWidth / 2, newHeight);
+    // the screamer was originally made without accounting for window resize,
+    // the scale factor was created based on the windows height in comparison
+    // to the height of the original proportions of the screamer at the optimal height
+    // with scaleFactor being added to each element ensuring correct sizing for current window height
+    let scaleFactor = height / 830;
+    let verticalOffset = 80 * scaleFactor;
+  
+    // Draw bodies main shape with curves
+    fill(76, 63, 55); // body color
+    beginShape();
+    curveVertex(202 * scaleFactor, height); // start from bottom left of the screen
+    curveVertex(202 * scaleFactor, 752 * scaleFactor); // curve down towards body base
+    curveVertex(206 * scaleFactor, 692 * scaleFactor); // upward curve to define waist
+    curveVertex(188 * scaleFactor, 651 * scaleFactor); // curve inwards for shape contour
+    curveVertex(209 * scaleFactor, 593 * scaleFactor); // define shoulder area
+    curveVertex(222 * scaleFactor, 533 * scaleFactor); // further shape upper body
+    curveVertex(271 * scaleFactor, 509 * scaleFactor); // neck and head start
+    curveVertex(249 * scaleFactor, 434 * scaleFactor); // further curve for neck
+    curveVertex(300 * scaleFactor, 387 * scaleFactor); // head curve start
+    curveVertex(365 * scaleFactor, 427 * scaleFactor); // complete head shape
+    curveVertex(345 * scaleFactor, 520 * scaleFactor); // outline back to body
+    curveVertex(374 * scaleFactor, 610 * scaleFactor); // lower body
+    curveVertex(305 * scaleFactor, 738 * scaleFactor); // return to lower body area
+    curveVertex(305 * scaleFactor, height); // complete body outline at bottom right
+    endShape(CLOSE);
+  
+    // draw his hand - positioned near upper part of the body
+    fill(211, 164, 103); // hand color
+    beginShape();
+    curveVertex(246 * scaleFactor, 567 * scaleFactor); // hand start
+    curveVertex(271 * scaleFactor, 509 * scaleFactor); // move to lower hand section
+    curveVertex(249 * scaleFactor, 434 * scaleFactor); // curve up to hand contour
+    curveVertex(300 * scaleFactor, 387 * scaleFactor); // hand wrist area
+    curveVertex(365 * scaleFactor, 427 * scaleFactor); // base of fingers
+    curveVertex(345 * scaleFactor, 520 * scaleFactor); // up along fingers
+    curveVertex(374 * scaleFactor, 610 * scaleFactor); // back down along hand
+    curveVertex(353 * scaleFactor, 617 * scaleFactor); // close off hand shape
+    curveVertex(318 * scaleFactor, 542 * scaleFactor); // hand thumb area
+    curveVertex(340 * scaleFactor, 450 * scaleFactor); // fingers continue
+    curveVertex(285 * scaleFactor, 457 * scaleFactor); // top of hand contour
+    curveVertex(296 * scaleFactor, 505 * scaleFactor); // lower back of hand
+    curveVertex(263 * scaleFactor, 587 * scaleFactor); // base of hand near wrist
+    endShape(CLOSE);
+  
+    // draw face: contour of the face structure
+    fill(163, 144, 105); // face color
+    beginShape();
+    curveVertex(295 * scaleFactor, 514 * scaleFactor); // face outline start
+    curveVertex(284 * scaleFactor, 484 * scaleFactor); // top of face
+    curveVertex(263 * scaleFactor, 447 * scaleFactor); // curve down left side of face
+    curveVertex(293 * scaleFactor, 389 * scaleFactor); // lower chin area
+    curveVertex(351 * scaleFactor, 422 * scaleFactor); // right side of face
+    curveVertex(342 * scaleFactor, 469 * scaleFactor); // return to top right of face
+    curveVertex(329 * scaleFactor, 492 * scaleFactor); // finish contour
+    curveVertex(313 * scaleFactor, 513 * scaleFactor); // end at chin
+    endShape(CLOSE);
+  
+    //  eyes and mouth to define facial expression
+    fill(216, 181, 117); // color for expression details
+    ellipse(290 * scaleFactor, 440 * scaleFactor, 20 * scaleFactor, 30 * scaleFactor); // left eye
+    ellipse(325 * scaleFactor, 440 * scaleFactor, 20 * scaleFactor, 30 * scaleFactor); // right eye
+    ellipse(308 * scaleFactor, 490 * scaleFactor, 15 * scaleFactor, 30 * scaleFactor); // mouth
+  }
     
-    //resized flipped images
-    skyFlippedShape.resize(newWidth / 2, newHeight); 
-    waterFlippedShape.resize(newWidth / 2, newHeight); 
-    greenFlippedShape.resize(newWidth / 2, newHeight); 
-    boardwalkFlippedShape.resize(newWidth / 2, newHeight);
-}
+  //resized canvas to fit the windowbased on height and aspect ratio
+  function resizeCanvasToFitWindow() {
+    let newWidth = windowWidth; // Use window width instead of calculating from height
+    let newHeight = windowHeight;
+  
+    resizeCanvas(newWidth, newHeight);
+    
+    // Calculate the width for each half of the screen
+    let halfWidth = newWidth / 2;
+    
+    // Resize all images to fill half the screen width while maintaining aspect ratio
+    screamImg.resize(halfWidth, newHeight);
+    skyShape.resize(halfWidth, newHeight); 
+    waterShape.resize(halfWidth, newHeight); 
+    greenShape.resize(halfWidth, newHeight); 
+    boardwalkShape.resize(halfWidth, newHeight);
+    
+    // Resize flipped images
+    skyFlippedShape.resize(halfWidth, newHeight); 
+    waterFlippedShape.resize(halfWidth, newHeight); 
+    greenFlippedShape.resize(halfWidth, newHeight); 
+    boardwalkFlippedShape.resize(halfWidth, newHeight);
+  }

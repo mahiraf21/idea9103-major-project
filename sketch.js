@@ -376,7 +376,7 @@ function drawScreamer() {
   ellipse(308 * scaleFactor, 490 * scaleFactor, 15 * scaleFactor, 30 * scaleFactor); // mouth
 }
   
-  //resized canvas to fit the windowbased on height and aspect ratio
+//resized canvas to fit the windowbased on height and aspect ratio
 function resizeCanvasToFitWindow() {
   let newWidth = windowWidth; // Use window width instead of calculating from height
   let newHeight = windowHeight;
