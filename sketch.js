@@ -7,40 +7,42 @@ let frameCounter = 0; // frame counter for interpolation frequency
 
 function preload() {
     screamImg = loadImage("assets/scream.jpg"); // loads but doesn't display
-    skyShape = loadImage("assets/skyColourMap.png");
-    waterShape = loadImage("assets/waterColourMap.png");
-    greenShape = loadImage("assets/greenColourMap.png");
-    boardwalkShape = loadImage("assets/boardwalkColourMap.png");
+    skyShape = loadImage("assets/skyColourMap.png"); //file for the sky colour map
+    waterShape = loadImage("assets/waterColourMap.png"); //path for the water colour map
+    greenShape = loadImage("assets/greenColourMap.png"); //path for the green colour map
+    boardwalkShape = loadImage("assets/boardwalkColourMap.png"); //path for the boardwalk
     
-    // Load flipped images
+    //added flipped assets using https://flip.imageonline.co/ to add complexity
     skyFlippedShape = loadImage("assets/skyFlippedColourMap.png");
     waterFlippedShape = loadImage("assets/waterFlippedColourMap.png");
     greenFlippedShape = loadImage("assets/greenFlippedColourMap.png");
     boardwalkFlippedShape = loadImage("assets/boardwalkFlippedColourMap.png");
 }
 
-function setup() {
-    frameRate(30); 
-    imgAspectRatio = screamImg.width / screamImg.height;
-    resizeCanvasToFitWindow(); 
-    screamImg.loadPixels();
-    skyShape.loadPixels(); 
-    waterShape.loadPixels();
-    greenShape.loadPixels(); 
-    boardwalkShape.loadPixels();
+//
+function setup() { //for the animation
+    frameRate(30); //adjusted to reduce load time
+    imgAspectRatio = screamImg.width / screamImg.height; //gets aspect ratio by dividing width and height of image
+    resizeCanvasToFitWindow(); //resized canvas
+    screamImg.loadPixels(); //got the pixels for the image 'The Scream' Munch (1983)
+    skyShape.loadPixels(); //got the pixels for the sky
+    waterShape.loadPixels(); //got the pixels for the water
+    greenShape.loadPixels(); //got the pixels for the green bush
+    boardwalkShape.loadPixels(); //got the pixels for the boardwalk
 
-    // Load flipped images' pixels
-    skyFlippedShape.loadPixels();
+    // loaded the pixels for the flipped images
+    skyFlippedShape.loadPixels(); 
     waterFlippedShape.loadPixels();
     greenFlippedShape.loadPixels();
     boardwalkFlippedShape.loadPixels();
     
+    //sets the colour for the sky, water, green, boardwalk
     skyColour = color(255, 116, 2);
     waterColour = color(2, 2, 255);
     greenColour = color(30, 255, 0);
     boardwalkColour = color(153, 43, 0);
 
-    // Initialize circles for both shapes (original and flipped)
+    // initialized circles for the original and flipped images
     initializeCircles(skyCircles, skyShape, skyColour, 2000, 0.3, 0, 16);
     initializeCircles(waterCircles, waterShape, waterColour, 2000, 0.3, -0.15, 14);
     initializeCircles(greenCircles, greenShape, greenColour, 2000, 0.15, -0.25, 12);
@@ -51,64 +53,65 @@ function draw() {
   background(0);
   frameCounter++;
 
-  // Render the image on both the left and right halves
+  // rendered the image on both the left and right halves
   for (let i = 0; i < 2; i++) {
-      push(); // Save the current transformation state
-      translate(i * width / 2, 0); // Shift to the left or right half of the canvas
+      push(); // saved the current transformation state
+      translate(i * width / 2, 0); // shifts to the left or right half of the canvas
 
       if (i === 0) {
-          // Left half (normal images)
+          // draws circles for left half of image (normal)
           moveAndDrawCircles(skyCircles, skyShape, skyColour);
           moveAndDrawCircles(waterCircles, waterShape, waterColour);
           moveAndDrawCircles(greenCircles, greenShape, greenColour);
           moveAndDrawCircles(boardwalkCircles, boardwalkShape, boardwalkColour);
           
-          // Draw the screamer figure
+          // draws the screamer figure
           drawScreamer();
       } else {
           // Right half (flipped images)
-          scale(-1, 1); // Flip horizontally
-          translate(-width / 2, 0); // Move the origin back into the canvas
+          scale(-1, 1); // flips the objects horizontally
+          translate(-width / 2, 0); // moves the origin back into the canvas
 
           moveAndDrawCircles(skyCircles, skyFlippedShape, skyColour);
           moveAndDrawCircles(waterCircles, waterFlippedShape, waterColour);
           moveAndDrawCircles(greenCircles, greenFlippedShape, greenColour);
           moveAndDrawCircles(boardwalkCircles, boardwalkFlippedShape, boardwalkColour); // Use only the flipped boardwalk          
 
-          // Draw the flipped screamer figure
+          // drew the flipped screamer figure
           drawScreamer();
       }
 
-      pop(); // Restore transformation state
+      pop(); // restored transformation state
   }
-}
+} //defined a function to built and drive circles with specific features added to an array  
 function initializeCircles(circles, shape, colour, count, xSpeed, ySpeed, size) {
-    for (let i = 0; i < count; i++) {
-        let { x: xPos, y: yPos } = findRandomColourPosition(shape, colour, false);
-        let initialColour = getCachedColour(screamImg, int(xPos), int(yPos));
+    for (let i = 0; i < count; i++) { 
+        let { x: xPos, y: yPos } = findRandomColourPosition(shape, colour, false); //finds xy coordinate within the shape with that colour
+        let initialColour = getCachedColour(screamImg, int(xPos), int(yPos)); //retrieves original colour from screamImg
 
-        circles.push({
+        circles.push({ //adds the circle to the array
             x: xPos,
             y: yPos,
-            size: size + random(5),
-            opacity: 0,
-            fadeIn: true,
-            delay: int(random(30, 150)),
-            opacityDecayRate: random(1, 3),
-            currentColour: initialColour,
-            targetColour: initialColour,
-            xSpeed: xSpeed,
-            ySpeed: ySpeed
+            size: size + random(5), //randomly adds
+            opacity: 0, //beginning opacity for glittery effect
+            fadeIn: true, //circles fade in
+            delay: int(random(30, 150)), //added delay
+            opacityDecayRate: random(1, 3), //smooth darkening
+            currentColour: initialColour, //set initial colour
+            targetColour: initialColour, //also set as initial colour
+            xSpeed: xSpeed, //x-speed value
+            ySpeed: ySpeed //y-speed value
         });
     }
 }
 
-function findRandomColourPosition(shape, colour, isFlipped = false) {
+//function to find coordinate where colour is matched
+function findRandomColourPosition(shape, colour, isFlipped = false) { 
   let x, y;
   let attempts = 0;
-  const maxAttempts = 1000;
+  const maxAttempts = 1000; 
 
-  do {
+  do { //generates random coordinates, checks colour match, and if max attempts are reached
       x = int(random(isFlipped ? width / 2 : 0, isFlipped ? width : width / 2));
       y = int(random(height));
       attempts++;
@@ -116,41 +119,42 @@ function findRandomColourPosition(shape, colour, isFlipped = false) {
           console.error("max attempts reached: unable to find matching colour");
           break;
       }
-  } while (!isShapeColour(getCachedColour(shape, x, y), colour) || isPositionNearScreamer(x, y)); // Check if near screamer
-  return { x, y };
+  } while (!isShapeColour(getCachedColour(shape, x, y), colour) || isPositionNearScreamer(x, y)); //checks if near screamer
+  return { x, y }; 
 }
 
 function isPositionNearScreamer(x, y) {
-    // Adjust the bounding box of the screamer shape to avoid overlap
+    //adjusts the bounding box of the screamer shape to avoid overlap
     const screamerBounds = {
-        xMin: 188, xMax: 374,  // Horizontal bounds (example values, adjust as needed)
-        yMin: 487, yMax: 880   // Vertical bounds (example values, adjust as needed)
+        xMin: 188, xMax: 374,  //horizontal bounds
+        yMin: 487, yMax: 880   //vertical bounds 
     };
     return x > screamerBounds.xMin && x < screamerBounds.xMax && y > screamerBounds.yMin && y < screamerBounds.yMax;
-}
+} 
 
+//function moveAndDrawCircles which iterates through each Circle in the array
 function moveAndDrawCircles(circles, shape, shapeColour) {
     for (let i = 0; i < circles.length; i++) {
-        let circle = circles[i];
+        let circle = circles[i]; //current circle object
 
-        if (frameCounter >= circle.delay) {
-            circle.x += circle.xSpeed;
+        if (frameCounter >= circle.delay) { //ensure frame counter passes delay
+            circle.x += circle.xSpeed; //updates position based on speed
             circle.y += circle.ySpeed;
 
-            if (frameCounter % 5 === 0) {
+            if (frameCounter % 5 === 0) { //gets ScreamImg colour every 5 frames at the circle pos
                 let newTargetColour = getCachedColour(screamImg, int(circle.x), int(circle.y));
                 circle.targetColour = newTargetColour;
             }
 
-            circle.currentColour = lerpColor(circle.currentColour, circle.targetColour, 0.1);
+            circle.currentColour = lerpColor(circle.currentColour, circle.targetColour, 0.1); //smooth colour shift
 
-            if (circle.fadeIn) {
+            if (circle.fadeIn) {  //increase opactity by 25 if fade in is true until 255 
                 circle.opacity += 25;
                 if (circle.opacity >= 255) {
                     circle.opacity = 255;
                     circle.fadeIn = false;
                 }
-            } else {
+            } else { //else decreases opacity by DecayRate
                 circle.opacity -= circle.opacityDecayRate;
                 if (circle.opacity <= 0) {
                     let newPosition = findRandomColourPosition(shape, shapeColour);
@@ -161,14 +165,14 @@ function moveAndDrawCircles(circles, shape, shapeColour) {
                     circle.delay = frameCounter + int(random(30, 150));
                 }
             }
-
+            //sets fill colour
             fill(circle.currentColour.levels[0], circle.currentColour.levels[1], circle.currentColour.levels[2], circle.opacity);
-            noStroke();
-            ellipse(circle.x, circle.y, circle.size);
+            noStroke(); //no outlines
+            ellipse(circle.x, circle.y, circle.size); //draws as ellipse
         }
     }
 }
-
+//finds random matching colour until 1000 times
 function findRandomColourPosition(shape, colour, isFlipped = false) {
   let x, y;
   let attempts = 0;
@@ -185,19 +189,80 @@ function findRandomColourPosition(shape, colour, isFlipped = false) {
   } while (!isShapeColour(getCachedColour(shape, x, y), colour));
   return { x, y };
 }
-
+//to check if pixelColour matches shapeColour
 function isShapeColour(pixelColour, shapeColour) {
     return red(pixelColour) === red(shapeColour) &&
            green(pixelColour) === green(shapeColour) &&
            blue(pixelColour) === blue(shapeColour);
 }
-
+//retrieves colour from coordinates through pixels
 function getCachedColour(image, x, y) {
     let index = (x + y * image.width) * 4;
     return color(image.pixels[index], image.pixels[index + 1], image.pixels[index + 2]);
 }
 
-function resizeCanvasToFitWindow() {
+function drawScreamer() {
+    //draw body with brown color
+    fill(76, 63, 55); //fills with brown
+    beginShape();
+    curveVertex(width / 5, height); //start from the base of the canvas
+    curveVertex(202, 880); //first curve point 
+    curveVertex(206, 792); //second curve point 
+    curveVertex(188, 751); //third curve point 
+    curveVertex(209, 693); //fourth curve point 
+    curveVertex(222, 633); //fifth curve point 
+    curveVertex(271, 609); //sixth curve point 
+    curveVertex(249, 534); //seventh curve point 
+    curveVertex(300, 487); //eighth curve point (near the chest)
+    curveVertex(365, 527); //ninth curve point (upper part)
+    curveVertex(345, 620); //curving back up
+    curveVertex(374, 710); //reaching for the hand position
+    curveVertex(305, 800); //curve back up
+    curveVertex(320, 710); //end the curve at the bottom edge of the canvas
+    endShape(CLOSE);
+  
+    //drew hand with beige color (which is a more expressive curve to mimic "screaming" pose)
+    fill(222, 199, 146); //filled with beige
+    beginShape();
+    curveVertex(246, 667); //started the hand curve
+    curveVertex(271, 609); //curve shape
+    curveVertex(249, 534); //continue the curve down
+    curveVertex(300, 487); //maintain body interaction
+    curveVertex(365, 527); //add the hand pose
+    curveVertex(345, 620); //wrapping hand back 
+    curveVertex(374, 710); //finishing the hand curve 
+    curveVertex(353, 717); //add expressive hand extension 
+    curveVertex(318, 642); //adding more fluid motion 
+    curveVertex(340, 550); //keep the fluid motion going
+    curveVertex(285, 557); //adding hand fluidity 
+    curveVertex(296, 605); //complete the hand shape 
+    curveVertex(263, 687); //bottom end of the hand 
+    endShape(CLOSE);
+  
+    //drew face with white color
+    fill(169, 169, 169); //fill with white shade
+    beginShape();
+    curveVertex(295, 614); //start face curve 
+    curveVertex(284, 584); //continue curve 
+    curveVertex(263, 547); //continue to facial curve 
+    curveVertex(293, 489); //extend face shape 
+    curveVertex(351, 522); //curve for the mouth 
+    curveVertex(342, 569); //finish upper facial features
+    curveVertex(329, 592); //end face curve 
+    curveVertex(313, 613); //closing the face shape 
+    endShape(CLOSE);
+  
+    //drew eyes and mouth with dark beige color for expressions
+    fill(255); //fill with dark beige for expression
+    ellipse(290, 540, 20, 30); //left eye
+    ellipse(325, 540, 20, 30); //right eye 
+    ellipse(308, 590, 15, 30); //mouth expression 
+    
+    pop();
+  }
+  
+  //resized canvas to fit the windowbased on height and aspect ratio
+  function resizeCanvasToFitWindow() {
     let newHeight = windowHeight;
     let newWidth = newHeight * imgAspectRatio * 2;
 
@@ -208,70 +273,9 @@ function resizeCanvasToFitWindow() {
     greenShape.resize(newWidth / 2, newHeight); 
     boardwalkShape.resize(newWidth / 2, newHeight);
     
-    // Resize flipped images
+    //resized flipped images
     skyFlippedShape.resize(newWidth / 2, newHeight); 
     waterFlippedShape.resize(newWidth / 2, newHeight); 
     greenFlippedShape.resize(newWidth / 2, newHeight); 
     boardwalkFlippedShape.resize(newWidth / 2, newHeight);
 }
-
-function drawScreamer() {
-    // Draw body with brown color
-    fill(76, 63, 55); // Fill with brown
-    beginShape();
-    curveVertex(width / 5, height); // Start from the base of the canvas
-    curveVertex(202, 880); // First curve point (moved down)
-    curveVertex(206, 792); // Second curve point (moved down)
-    curveVertex(188, 751); // Third curve point (moved down)
-    curveVertex(209, 693); // Fourth curve point (moved down)
-    curveVertex(222, 633); // Fifth curve point (moved down)
-    curveVertex(271, 609); // Sixth curve point (moved down)
-    curveVertex(249, 534); // Seventh curve point (moved down)
-    curveVertex(300, 487); // Eighth curve point (near the chest) (moved down)
-    curveVertex(365, 527); // Ninth curve point (upper part) (moved down)
-    curveVertex(345, 620); // Curving back up (moved down)
-    curveVertex(374, 710); // Reaching for the hand position (moved down)
-    curveVertex(305, 800); // Curve back up (moved down)
-    curveVertex(320, 710); // End the curve at the bottom edge of the canvas (moved down)
-    endShape(CLOSE);
-  
-    // Draw hand with beige color (more expressive curve to mimic "screaming" pose)
-    fill(222, 199, 146); // Fill with beige
-    beginShape();
-    curveVertex(246, 667); // Start the hand curve (moved down)
-    curveVertex(271, 609); // Curve shape (moved down)
-    curveVertex(249, 534); // Continue the curve down (moved down)
-    curveVertex(300, 487); // Maintain body interaction (moved down)
-    curveVertex(365, 527); // Add the hand pose (moved down)
-    curveVertex(345, 620); // Wrapping hand back (moved down)
-    curveVertex(374, 710); // Finishing the hand curve (moved down)
-    curveVertex(353, 717); // Add expressive hand extension (moved down)
-    curveVertex(318, 642); // Adding more fluid motion (moved down)
-    curveVertex(340, 550); // Keep the fluid motion going (moved down)
-    curveVertex(285, 557); // Adding hand fluidity (moved down)
-    curveVertex(296, 605); // Complete the hand shape (moved down)
-    curveVertex(263, 687); // Bottom end of the hand (moved down)
-    endShape(CLOSE);
-  
-    // Draw face with white color
-    fill(169, 169, 169); // Fill with light beige
-    beginShape();
-    curveVertex(295, 614); // Start face curve (moved down)
-    curveVertex(284, 584); // Continue curve (moved down)
-    curveVertex(263, 547); // Continue to facial curve (moved down)
-    curveVertex(293, 489); // Extend face shape (moved down)
-    curveVertex(351, 522); // Curve for the mouth (moved down)
-    curveVertex(342, 569); // Finish upper facial features (moved down)
-    curveVertex(329, 592); // End face curve (moved down)
-    curveVertex(313, 613); // Closing the face shape (moved down)
-    endShape(CLOSE);
-  
-    // Draw eyes and mouth with dark beige color for expressions
-    fill(255); // Fill with dark beige for expression
-    ellipse(290, 540, 20, 30); // Left eye (moved down)
-    ellipse(325, 540, 20, 30); // Right eye (moved down)
-    ellipse(308, 590, 15, 30); // Mouth expression (moved down)
-    
-    pop();
-  }
-  
