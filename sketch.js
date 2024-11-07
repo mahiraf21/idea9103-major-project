@@ -72,16 +72,19 @@ function preload() {
 function setup() { //for the animation
     angleMode(DEGREES);
     frameRate(30); //adjusted to reduce load time
-    imgAspectRatio = screamImg.width / screamImg.height; //gets aspect ratio by dividing width and height of image
-    resizeCanvasToFitWindow(); //resized canvas
-    screamImg.loadPixels(); //got the pixels for the image 'The Scream' Munch (1983)
-    skyShape.loadPixels(); //got the pixels for the sky
-    waterShape.loadPixels(); //got the pixels for the water
-    greenShape.loadPixels(); //got the pixels for the green bush
-    boardwalkShape.loadPixels(); //got the pixels for the boardwalk
-
-    // loaded the pixels for the flipped images
-    skyFlippedShape.loadPixels(); 
+    createCanvas(windowWidth, windowHeight);
+    imgAspectRatio = screamImg.width / screamImg.height;
+    resizeCanvasToFitWindow();
+    
+    // Initialize your existing setup code here
+    screamImg.loadPixels();
+    skyShape.loadPixels();
+    waterShape.loadPixels();
+    greenShape.loadPixels();
+    boardwalkShape.loadPixels();
+    
+    // Load flipped images pixels
+    skyFlippedShape.loadPixels();
     waterFlippedShape.loadPixels();
     greenFlippedShape.loadPixels();
     boardwalkFlippedShape.loadPixels();
@@ -195,7 +198,9 @@ function findRandomColourPosition(shape, colour, isFlipped = false) {
 }
 
 function isPositionNearScreamer(x, y) {
-    //adjusts the bounding box of the screamer shape to avoid overlap
+  let scaleFactor = height / 830;
+  let verticalOffset = 80 * scaleFactor;  
+  //adjusts the bounding box of the screamer shape to avoid overlap
     const screamerBounds = {
         xMin: 188, xMax: 374,  //horizontal bounds
         yMin: 487, yMax: 880   //vertical bounds 
@@ -312,11 +317,12 @@ function drawScreamer() {
   // to the height of the original proportions of the screamer at the optimal height
   // with scaleFactor being added to each element ensuring correct sizing for current window height
   let scaleFactor = height / 830;
+  let verticalOffset = 80 * scaleFactor;
 
   // Draw bodies main shape with curves
   fill(76, 63, 55); // body color
   beginShape();
-  curveVertex(width / 3, height); // start from bottom left of the screen
+  curveVertex(202 * scaleFactor, height); // start from bottom left of the screen
   curveVertex(202 * scaleFactor, 752 * scaleFactor); // curve down towards body base
   curveVertex(206 * scaleFactor, 692 * scaleFactor); // upward curve to define waist
   curveVertex(188 * scaleFactor, 651 * scaleFactor); // curve inwards for shape contour
@@ -329,7 +335,7 @@ function drawScreamer() {
   curveVertex(345 * scaleFactor, 520 * scaleFactor); // outline back to body
   curveVertex(374 * scaleFactor, 610 * scaleFactor); // lower body
   curveVertex(305 * scaleFactor, 738 * scaleFactor); // return to lower body area
-  curveVertex(320 * scaleFactor, height); // complete body outline at bottom right
+  curveVertex(305 * scaleFactor, height); // complete body outline at bottom right
   endShape(CLOSE);
 
   // draw his hand - positioned near upper part of the body
@@ -372,19 +378,24 @@ function drawScreamer() {
   
   //resized canvas to fit the windowbased on height and aspect ratio
 function resizeCanvasToFitWindow() {
-    let newHeight = windowHeight;
-    let newWidth = newHeight * imgAspectRatio * 2;
+  let newWidth = windowWidth; // Use window width instead of calculating from height
+  let newHeight = windowHeight;
 
-    resizeCanvas(newWidth, newHeight);
-    screamImg.resize(newWidth / 2, newHeight);
-    skyShape.resize(newWidth / 2, newHeight); 
-    waterShape.resize(newWidth / 2, newHeight); 
-    greenShape.resize(newWidth / 2, newHeight); 
-    boardwalkShape.resize(newWidth / 2, newHeight);
-    
-    //resized flipped images
-    skyFlippedShape.resize(newWidth / 2, newHeight); 
-    waterFlippedShape.resize(newWidth / 2, newHeight); 
-    greenFlippedShape.resize(newWidth / 2, newHeight); 
-    boardwalkFlippedShape.resize(newWidth / 2, newHeight);
+  resizeCanvas(newWidth, newHeight);
+  
+  // Calculate the width for each half of the screen
+  let halfWidth = newWidth / 2;
+  
+  // Resize all images to fill half the screen width while maintaining aspect ratio
+  screamImg.resize(halfWidth, newHeight);
+  skyShape.resize(halfWidth, newHeight); 
+  waterShape.resize(halfWidth, newHeight); 
+  greenShape.resize(halfWidth, newHeight); 
+  boardwalkShape.resize(halfWidth, newHeight);
+  
+  // Resize flipped images
+  skyFlippedShape.resize(halfWidth, newHeight); 
+  waterFlippedShape.resize(halfWidth, newHeight); 
+  greenFlippedShape.resize(halfWidth, newHeight); 
+  boardwalkFlippedShape.resize(halfWidth, newHeight);
 }
