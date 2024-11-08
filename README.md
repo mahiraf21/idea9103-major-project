@@ -11,7 +11,9 @@ This is the final output of the individual project:
 There is a slight update in the circle, the position & size will vary smoothly by using perlin noise. The screamer is also animated with perlin noise.
 
 ### How to Interact
-Load the page and the animation will automatically play. Try resizing the window to see how the design adjust to different screen sizes.
+1. Load the page
+2. Animation will automatically play
+3. Try resizing the window to see how the design adjust to different screen sizes.
 
 ### Project Details
 
@@ -33,7 +35,15 @@ I was inspired by the Van Gogh's Starry Night reimagined as an interactive app. 
 - From the original group code, I added a new class for the Wave moving pattern & incorporated perlin noise in it
 - I also added perlin noise to the drawScreamer() function
 - The perlin noise affected several other functions, such as the setup(), draw(), and initializeCircles()
-- I also edited the responsive function to make it responsive because the original one has some issues
+Example of perlin noise:
+```
+let angleMove = map(noise(1000), 0, 360, 0, width);
+        this.xNoiseOffset += cos(angleMove) + 0.001; // drift along x axis
+        this.yNoiseOffset += sin(angleMove) + 0.001; // drift along y axis
+        this.sizeNoiseOffset += 0.01; // slowly change size effect
+```
+- Optimized the windowResized function to improve the responsiveness.
+
 
 #### Tools and technique
 - I used perlin noise that we learned during lecture and tutorials. I also watched videos by The Coding Train and others to better understand it. I also interact with chatGPT to understand a more specific code.
