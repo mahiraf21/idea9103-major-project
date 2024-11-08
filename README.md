@@ -35,7 +35,8 @@ I was inspired by the Van Gogh's Starry Night reimagined as an interactive app. 
 - From the original group code, I added a new class for the Wave moving pattern & incorporated perlin noise in it
 - I also added perlin noise to the drawScreamer() function
 - The perlin noise affected several other functions, such as the setup(), draw(), and initializeCircles()
-Example of perlin noise:
+
+Example of perlin noise used:
 ```
 let angleMove = map(noise(1000), 0, 360, 0, width);
         this.xNoiseOffset += cos(angleMove) + 0.001; // drift along x axis
