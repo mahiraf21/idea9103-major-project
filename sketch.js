@@ -74,7 +74,6 @@ function setup() { //for the animation
     frameRate(30); //adjusted to reduce load time
     createCanvas(windowWidth, windowHeight);
     imgAspectRatio = screamImg.width / screamImg.height;
-    resizeCanvasToFitWindow();
     
     // Initialize your existing setup code here
     screamImg.loadPixels();
@@ -106,6 +105,9 @@ function setup() { //for the animation
     waterWave = new WavePattern();
     greenWave = new WavePattern();
     boardwalkWave = new WavePattern();
+
+    //setup window resized to make it responsive
+    windowResized();
 }
 
 function draw() {
@@ -179,31 +181,14 @@ function initializeCircles(circles, shape, colour, count, xSpeed, ySpeed, size) 
     }
 }
 
-//function to find coordinate where colour is matched
-function findRandomColourPosition(shape, colour, isFlipped = false) { 
-  let x, y;
-  let attempts = 0;
-  const maxAttempts = 1000; 
-
-  do { //generates random coordinates, checks colour match, and if max attempts are reached
-      x = int(random(isFlipped ? width / 2 : 0, isFlipped ? width : width / 2));
-      y = int(random(height));
-      attempts++;
-      if (attempts >= maxAttempts) {
-          console.error("max attempts reached: unable to find matching colour");
-          break;
-      }
-  } while (!isShapeColour(getCachedColour(shape, x, y), colour) || isPositionNearScreamer(x, y)); //checks if near screamer
-  return { x, y }; 
-}
-
+// to check whether the position is near the screaming guy or not
 function isPositionNearScreamer(x, y) {
   let scaleFactor = height / 830;
   let verticalOffset = 80 * scaleFactor;  
   //adjusts the bounding box of the screamer shape to avoid overlap
     const screamerBounds = {
-        xMin: 188, xMax: 374,  //horizontal bounds
-        yMin: 487, yMax: 880   //vertical bounds 
+        xMin: 188 * scaleFactor, xMax: 374 * scaleFactor,  //horizontal bounds
+        yMin: 487 * scaleFactor + verticalOffset, yMax: 880 * scaleFactor + verticalOffset   //vertical bounds 
     };
     return x > screamerBounds.xMin && x < screamerBounds.xMax && y > screamerBounds.yMin && y < screamerBounds.yMax;
 } 
@@ -317,67 +302,89 @@ function drawScreamer() {
   // to the height of the original proportions of the screamer at the optimal height
   // with scaleFactor being added to each element ensuring correct sizing for current window height
   let scaleFactor = height / 830;
-  let verticalOffset = 80 * scaleFactor;
+  let horizontalOffset = screamImg.width/8 * scaleFactor;
+
+  // i also incorporate perlin noise into the screamer function
+  // code reference: chat gpt
+  // first, set up noise offsets for subtle movements
+  let noiseX = noise(frameCount * 0.1) * 10 * scaleFactor; // small horizontal movements
+  let noiseY = noise(frameCount * 0.1 + 1000) * 10 * scaleFactor // small vertical movement
+  // then add noiseX and noiseY to each vertex to create a small movement
+
 
   // Draw bodies main shape with curves
+  // the vertex function were introduced in the lecture
+  // however, in this code i will use curveVertex to give more control on the curve
+  // reference: https://p5js.org/reference/p5/curveVertex/
+
   fill(76, 63, 55); // body color
   beginShape();
-  curveVertex(202 * scaleFactor, height); // start from bottom left of the screen
-  curveVertex(202 * scaleFactor, 752 * scaleFactor); // curve down towards body base
-  curveVertex(206 * scaleFactor, 692 * scaleFactor); // upward curve to define waist
-  curveVertex(188 * scaleFactor, 651 * scaleFactor); // curve inwards for shape contour
-  curveVertex(209 * scaleFactor, 593 * scaleFactor); // define shoulder area
-  curveVertex(222 * scaleFactor, 533 * scaleFactor); // further shape upper body
-  curveVertex(271 * scaleFactor, 509 * scaleFactor); // neck and head start
-  curveVertex(249 * scaleFactor, 434 * scaleFactor); // further curve for neck
-  curveVertex(300 * scaleFactor, 387 * scaleFactor); // head curve start
-  curveVertex(365 * scaleFactor, 427 * scaleFactor); // complete head shape
-  curveVertex(345 * scaleFactor, 520 * scaleFactor); // outline back to body
-  curveVertex(374 * scaleFactor, 610 * scaleFactor); // lower body
-  curveVertex(305 * scaleFactor, 738 * scaleFactor); // return to lower body area
-  curveVertex(305 * scaleFactor, height); // complete body outline at bottom right
+  curveVertex(202 * scaleFactor + noiseX + horizontalOffset, height + noiseY); // start from bottom left of the screen
+  curveVertex(202 * scaleFactor + noiseX + horizontalOffset, 752 * scaleFactor + noiseY); // curve down towards body base
+  curveVertex(206 * scaleFactor + noiseX + horizontalOffset, 692 * scaleFactor + noiseY); // upward curve to define waist
+  curveVertex(188 * scaleFactor + noiseX + horizontalOffset, 651 * scaleFactor + noiseY); // curve inwards for shape contour
+  curveVertex(209 * scaleFactor + noiseX + horizontalOffset, 593 * scaleFactor + noiseY); // define shoulder area
+  curveVertex(222 * scaleFactor + noiseX + horizontalOffset, 533 * scaleFactor + noiseY); // further shape upper body
+  curveVertex(271 * scaleFactor + noiseX + horizontalOffset, 509 * scaleFactor + noiseY); // neck and head start
+  curveVertex(249 * scaleFactor + noiseX + horizontalOffset, 434 * scaleFactor + noiseY); // further curve for neck
+  curveVertex(300 * scaleFactor + noiseX + horizontalOffset, 387 * scaleFactor + noiseY); // head curve start
+  curveVertex(365 * scaleFactor + noiseX + horizontalOffset, 427 * scaleFactor + noiseY); // complete head shape
+  curveVertex(345 * scaleFactor + noiseX + horizontalOffset, 520 * scaleFactor + noiseY); // outline back to body
+  curveVertex(374 * scaleFactor + noiseX + horizontalOffset, 610 * scaleFactor + noiseY); // lower body
+  curveVertex(305 * scaleFactor + noiseX + horizontalOffset, 738 * scaleFactor + noiseY); // return to lower body area
+  curveVertex(305 * scaleFactor + noiseX + horizontalOffset, height + noiseY); // complete body outline at bottom right
   endShape(CLOSE);
 
   // draw his hand - positioned near upper part of the body
   fill(211, 164, 103); // hand color
   beginShape();
-  curveVertex(246 * scaleFactor, 567 * scaleFactor); // hand start
-  curveVertex(271 * scaleFactor, 509 * scaleFactor); // move to lower hand section
-  curveVertex(249 * scaleFactor, 434 * scaleFactor); // curve up to hand contour
-  curveVertex(300 * scaleFactor, 387 * scaleFactor); // hand wrist area
-  curveVertex(365 * scaleFactor, 427 * scaleFactor); // base of fingers
-  curveVertex(345 * scaleFactor, 520 * scaleFactor); // up along fingers
-  curveVertex(374 * scaleFactor, 610 * scaleFactor); // back down along hand
-  curveVertex(353 * scaleFactor, 617 * scaleFactor); // close off hand shape
-  curveVertex(318 * scaleFactor, 542 * scaleFactor); // hand thumb area
-  curveVertex(340 * scaleFactor, 450 * scaleFactor); // fingers continue
-  curveVertex(285 * scaleFactor, 457 * scaleFactor); // top of hand contour
-  curveVertex(296 * scaleFactor, 505 * scaleFactor); // lower back of hand
-  curveVertex(263 * scaleFactor, 587 * scaleFactor); // base of hand near wrist
+  curveVertex(246 * scaleFactor + noiseX + horizontalOffset, 567 * scaleFactor + noiseY); // hand start
+  curveVertex(271 * scaleFactor + noiseX + horizontalOffset, 509 * scaleFactor + noiseY); // move to lower hand section
+  curveVertex(249 * scaleFactor + noiseX + horizontalOffset, 434 * scaleFactor + noiseY); // curve up to hand contour
+  curveVertex(300 * scaleFactor + noiseX + horizontalOffset, 387 * scaleFactor + noiseY); // hand wrist area
+  curveVertex(365 * scaleFactor + noiseX + horizontalOffset, 427 * scaleFactor + noiseY); // base of fingers
+  curveVertex(345 * scaleFactor + noiseX + horizontalOffset, 520 * scaleFactor + noiseY); // up along fingers
+  curveVertex(374 * scaleFactor + noiseX + horizontalOffset, 610 * scaleFactor + noiseY); // back down along hand
+  curveVertex(353 * scaleFactor + noiseX + horizontalOffset, 617 * scaleFactor + noiseY); // close off hand shape
+  curveVertex(318 * scaleFactor + noiseX + horizontalOffset, 542 * scaleFactor + noiseY); // hand thumb area
+  curveVertex(340 * scaleFactor + noiseX + horizontalOffset, 450 * scaleFactor + noiseY); // fingers continue
+  curveVertex(285 * scaleFactor + noiseX + horizontalOffset, 457 * scaleFactor + noiseY); // top of hand contour
+  curveVertex(296 * scaleFactor + noiseX + horizontalOffset, 505 * scaleFactor + noiseY); // lower back of hand
+  curveVertex(263 * scaleFactor + noiseX + horizontalOffset, 587 * scaleFactor + noiseY); // base of hand near wrist
   endShape(CLOSE);
 
   // draw face: contour of the face structure
   fill(163, 144, 105); // face color
   beginShape();
-  curveVertex(295 * scaleFactor, 514 * scaleFactor); // face outline start
-  curveVertex(284 * scaleFactor, 484 * scaleFactor); // top of face
-  curveVertex(263 * scaleFactor, 447 * scaleFactor); // curve down left side of face
-  curveVertex(293 * scaleFactor, 389 * scaleFactor); // lower chin area
-  curveVertex(351 * scaleFactor, 422 * scaleFactor); // right side of face
-  curveVertex(342 * scaleFactor, 469 * scaleFactor); // return to top right of face
-  curveVertex(329 * scaleFactor, 492 * scaleFactor); // finish contour
-  curveVertex(313 * scaleFactor, 513 * scaleFactor); // end at chin
+  curveVertex(295 * scaleFactor + noiseX + horizontalOffset, 514 * scaleFactor + noiseY); // face outline start
+  curveVertex(284 * scaleFactor + noiseX + horizontalOffset, 484 * scaleFactor + noiseY); // top of face
+  curveVertex(263 * scaleFactor + noiseX + horizontalOffset, 447 * scaleFactor + noiseY); // curve down left side of face
+  curveVertex(293 * scaleFactor + noiseX + horizontalOffset, 389 * scaleFactor + noiseY); // lower chin area
+  curveVertex(351 * scaleFactor + noiseX + horizontalOffset, 422 * scaleFactor + noiseY); // right side of face
+  curveVertex(342 * scaleFactor + noiseX + horizontalOffset, 469 * scaleFactor + noiseY); // return to top right of face
+  curveVertex(329 * scaleFactor + noiseX + horizontalOffset, 492 * scaleFactor + noiseY); // finish contour
+  curveVertex(313 * scaleFactor + noiseX + horizontalOffset, 513 * scaleFactor + noiseY); // end at chin
   endShape(CLOSE);
 
   //  eyes and mouth to define facial expression
   fill(216, 181, 117); // color for expression details
-  ellipse(290 * scaleFactor, 440 * scaleFactor, 20 * scaleFactor, 30 * scaleFactor); // left eye
-  ellipse(325 * scaleFactor, 440 * scaleFactor, 20 * scaleFactor, 30 * scaleFactor); // right eye
-  ellipse(308 * scaleFactor, 490 * scaleFactor, 15 * scaleFactor, 30 * scaleFactor); // mouth
+
+  // add perlin noise to animate the eyes
+  let eyeNoiseX = noise(frameCount * 0.1) * 8 * scaleFactor; // noise for horizontal eye movement
+  let eyeNoiseY = noise(frameCount * 0.1 + 5000) * 8 * scaleFactor; // noise for vertical eye movement
+  // apply perlin noise to the eyes
+  ellipse(290 * scaleFactor + horizontalOffset + eyeNoiseX, 440 * scaleFactor + eyeNoiseY, 20 * scaleFactor, 30 * scaleFactor); // left eye
+  ellipse(325 * scaleFactor + horizontalOffset + eyeNoiseX, 440 * scaleFactor + eyeNoiseY, 20 * scaleFactor, 30 * scaleFactor); // right eye
+  // add perlin noise to animate the mouth
+  let mouthNoiseX = noise(frameCount * 0.2) * 8 * scaleFactor; // noise for horizontal movement
+  let mouthNoiseY = noise(frameCount * 0.2 + 1000) * 8 * scaleFactor; // noise for vertical movement
+  // apply perlin noise to the mouth
+  ellipse(308 * scaleFactor + horizontalOffset + mouthNoiseX, 490 * scaleFactor + mouthNoiseY, 15 * scaleFactor, 30 * scaleFactor); // mouth
+
 }
   
 //resized canvas to fit the windowbased on height and aspect ratio
-function resizeCanvasToFitWindow() {
+function windowResized() {
   let newWidth = windowWidth; // Use window width instead of calculating from height
   let newHeight = windowHeight;
 
@@ -399,3 +406,14 @@ function resizeCanvasToFitWindow() {
   greenFlippedShape.resize(halfWidth, newHeight); 
   boardwalkFlippedShape.resize(halfWidth, newHeight);
 }
+
+// acknowledgements
+// chat gpt was used to assist with bug fixing the code
+
+// references
+// Flip image online (quickly) - free tool. (n.d.). https://flip.imageonline.co/
+// lerpColor. (n.d.). https://p5js.org/reference/p5/lerpColor/
+// W3Schools.com. (n.d.). https://www.w3schools.com/jsref/jsref_dowhile.asp 
+// curveVertex. (n.d.). https://p5js.org/reference/p5/curveVertex/
+// OpenAI. (2024). ChatGPT [Large language model]. https://chatgpt.com
+
